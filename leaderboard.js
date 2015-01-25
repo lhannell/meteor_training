@@ -2,8 +2,11 @@ PlayersList = new Meteor.Collection('players');
 
 
 if (Meteor.isClient) {
+
+  Meteor.subscribe('thePlayers');
   
   Template.leaderboard.player = function() {
+    var currentUserId = Meteor.userId();
     return PlayersList.find({},{sort: {score: -1, name: 1}});
 
   };
@@ -47,9 +50,11 @@ if (Meteor.isClient) {
     'submit form': function(event, template) {
       event.preventDefault();
       var playerNameVar = template.find('#playerName').value;
+      var currentUserId = Meteor.userId();
       PlayersList.insert({
         name: playerNameVar,
-        score:0
+        score:0,
+        createdBy: currentUserId
       });
       console.log(playerNameVar);
     }
@@ -59,5 +64,9 @@ if (Meteor.isClient) {
 };
 
 if (Meteor.isServer) {
-
+  Meteor.publish('thePlayers', function() {
+    var currentUserId = this.userId;
+    return PlayersList.find({ createdBy: currentUserId });
+  });
 };
+
